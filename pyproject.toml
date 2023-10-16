@@ -1,7 +1,7 @@
 [project]
 name = "fastapi-demo"
 version = "1.0.0"
-description = "A basic web api."
+description = "A basic web api with hot sauce sample data 🌶️"
 
 
 [build-system]
@@ -10,6 +10,7 @@ build-backend = "setuptools.build_meta"
 
 dependencies = [
     "fastapi",
+    "pydantic"
 ]
 
 [project.optional-dependencies]
