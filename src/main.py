@@ -1,6 +1,7 @@
-from fastapi import FastAPI, status, HTTPException
-from .model import HotSauce
+from fastapi import FastAPI, HTTPException, status
+
 from .db import MockDb
+from .model import HotSauce
 
 DB = MockDb()
 

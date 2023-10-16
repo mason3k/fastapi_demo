@@ -1,12 +1,16 @@
-from pathlib import Path
 import csv
 from contextlib import suppress
 from dataclasses import dataclass, field
+from pathlib import Path
+from typing import ClassVar
+
 from .model import HotSauce
 
 
 @dataclass
 class MockDb:
+    SRC_FILE: ClassVar[Path] = Path(__file__).parent / "data.csv"
+
     items: list[HotSauce] = field(init=False)
     items_by_id: dict[int, HotSauce] = field(init=False)
 
@@ -16,7 +20,7 @@ class MockDb:
 
     def _load_data(self) -> list[HotSauce]:
         sauces = []
-        with Path("data.csv").open() as f:
+        with self.SRC_FILE.open() as f:
             reader = csv.reader(f)
             next(reader, None)  # skip header
             for row in reader:

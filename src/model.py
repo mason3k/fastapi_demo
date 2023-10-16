@@ -1,6 +1,7 @@
-from pydantic import BaseModel, field_validator, ValidationInfo
-from pydantic.types import PositiveFloat, NonNegativeInt
 from decimal import Decimal
+
+from pydantic import BaseModel, ValidationInfo, field_validator
+from pydantic.types import NonNegativeInt, PositiveFloat
 
 
 class HotSauce(BaseModel):
