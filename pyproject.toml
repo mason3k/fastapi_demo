@@ -2,7 +2,7 @@
 name = "fastapi-demo"
 version = "1.0.0"
 description = "A basic web api with hot sauce sample data 🌶️"
-
+requires-python = ">=3.10"
 
 [build-system]
 requires = ["setuptools>=61.0"]
