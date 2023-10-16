@@ -17,7 +17,7 @@ class HotSauce(BaseModel):
     @field_validator("ingredients", "flavor_notes", mode="before")
     @classmethod
     def split_list(cls, v: str, info: ValidationInfo) -> list[str]:
-        if v is None:
+        if v is None or isinstance(v, list):
             return v
         if isinstance(v, str):
             return [item.strip() for item in v.split(",")]
