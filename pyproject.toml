@@ -18,6 +18,12 @@ dev = [
   "uvicorn"
 ]
 test = [
-    "pytest"
+    "pytest",
+    "httpx"
+]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "fastapi_demo"
 ]
 
