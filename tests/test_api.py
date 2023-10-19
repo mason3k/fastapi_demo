@@ -6,40 +6,14 @@ from fastapi_demo import app
 
 client = TestClient(app)
 
-existing_sauce = {
-    "id": 1,
-    "name": "Frank's RedHot",
-    "brand": "Frank's",
-    "scoville_scale": 450,
-    "ingredients": ["Aged Cayenne Red Peppers", "Distilled Vinegar"],
-    "flavor_notes": ["Tangy", "Spicy"],
-    "bottle_size": 12.0,
-    "price": "3.99",
-}
 
-existing_sauce_2 = {
-    "id": 2,
-    "name": "Sriracha",
-    "brand": "Huy Fong",
-    "scoville_scale": 2200,
-    "ingredients": ["Chili", "Sugar", "Garlic", "Salt", "Vinegar"],
-    "flavor_notes": ["Sweet", "Tangy", "Spicy"],
-    "bottle_size": 17.0,
-    "price": "4.49",
-}
+def test_delete(existing_sauce):
+    resp = client.delete(f"/sauces/{existing_sauce['id']}")
+    assert resp.status_code == status.HTTP_204_NO_CONTENT
+    assert client.get(f"/sauces/{existing_sauce['id']}").status_code == status.HTTP_404_NOT_FOUND
 
 
-new_sauce = {
-    "id": 99,
-    "name": "Test Sauce",
-    "brand": "Kirkland Signature",
-    "scoville_scale": 1200,
-    "bottle_size": 12,
-    "flavor_notes": ["zany"],
-}
-
-
-def test_get_all():
+def test_get_all(existing_sauce):
     resp = client.get("/sauces/")
     assert resp.status_code == status.HTTP_200_OK
     content = resp.json()
@@ -47,7 +21,7 @@ def test_get_all():
     assert existing_sauce in content
 
 
-def test_get_one():
+def test_get_one(existing_sauce):
     resp = client.get("/sauces/1")
     assert resp.status_code == status.HTTP_200_OK
     content = resp.json()
@@ -63,21 +37,14 @@ def test_get_nonexistent():
     assert "does not exist" in error
 
 
-def test_create():
-    # id: int
-    # name: str
-    # brand: str
-    # scoville_scale: NonNegativeInt | None = None
-    # ingredients: list[str] | None = None
-    # flavor_notes: list[str] | None = None
-    # bottle_size: PositiveFloat | None = None
-    # price: Decimal | None = None
+def test_create(new_sauce):
     resp = client.post("/sauces/", json=new_sauce)
     assert resp.status_code == status.HTTP_201_CREATED
     assert new_sauce.items() <= resp.json().items()
+    assert client.get(f"/sauces/{new_sauce['id']}").status_code == status.HTTP_200_OK
 
 
-def test_create_already_exists():
+def test_create_already_exists(existing_sauce, new_sauce):
     existing_id = existing_sauce["id"]
     resp = client.post("/sauces/", json=new_sauce | {"id": existing_id})
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -116,7 +83,7 @@ def test_create_missing_data():
     assert content[0]["loc"] == ["body", "name"]
 
 
-def test_update():
+def test_update(existing_sauce_2):
     existing_id = existing_sauce_2["id"]
     updates = {
         "id": existing_id,
@@ -128,10 +95,11 @@ def test_update():
     resp = client.put(f"/sauces/{existing_id}", json=updates)
     resp.status_code == status.HTTP_200_OK
     assert {**existing_sauce_2, **updates}.items() <= resp.json().items()
+    assert client.get(f"/sauces/{existing_id}").json() == resp.json()
 
 
 @pytest.mark.xfail
-def test_update_incomplete_data():
+def test_update_incomplete_data(existing_sauce_2):
     existing_id = existing_sauce_2["id"]
     updates = {
         "id": existing_id,
@@ -140,15 +108,34 @@ def test_update_incomplete_data():
     resp = client.put(f"/sauces/{existing_id}", json=updates)
     resp.status_code == status.HTTP_200_OK
     assert {**existing_sauce_2, **updates}.items() <= resp.json().items()
+    assert client.get(f"/sauces/{existing_id}").json() == resp.json()
 
 
-def test_bad_update():
-    ...
+def test_bad_update(existing_sauce_2):
+    existing_id = existing_sauce_2["id"]
+    updates = {
+        "id": existing_id,
+        "name": "updated name",
+        "brand": "updated brand",
+        "bottle_size": -3,
+    }
+    resp = client.put(f"/sauces/{existing_id}", json=updates)
+    resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    content = resp.json()["detail"]
+    assert content[0]["type"] == "greater_than"
+    assert content[0]["loc"] == ["body", "bottle_size"]
 
 
-def test_update_default_merging():
-    ...
-
-
-def test_delete():
-    ...
+def test_update_does_not_exist():
+    nonexistent_id = 789
+    updates = {
+        "id": nonexistent_id,
+        "name": "updated name",
+        "brand": "updated brand",
+        "bottle_size": 10,
+    }
+    resp = client.put(f"/sauces/{nonexistent_id}", json=updates)
+    assert resp.status_code == status.HTTP_404_NOT_FOUND
+    content = resp.json()["detail"]
+    assert str(nonexistent_id) in content
+    assert "does not exist" in content
