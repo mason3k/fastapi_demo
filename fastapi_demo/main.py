@@ -8,13 +8,19 @@ DB = MockDb()
 app = FastAPI()
 
 
-@app.post("/sauces/", status_code=status.HTTP_201_CREATED)
-async def create_item(sauce: HotSauce) -> HotSauce:
-    if sauce.id in DB.items_by_id:
+@app.post("/sauces/{sauce_id}", status_code=status.HTTP_201_CREATED)
+async def create_item(sauce_id: int, sauce: HotSauce) -> HotSauce:
+    if sauce_id in DB.items_by_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Sauce with id {sauce.id} already exists",
+            detail=f"Sauce with id {sauce_id} already exists",
         )
+    DB.add(sauce, sauce_id)
+    return sauce
+
+
+@app.post("/sauces/", status_code=status.HTTP_201_CREATED)
+async def create_item_gen_id(sauce: HotSauce):
     DB.add(sauce)
     return sauce
 
@@ -41,9 +47,7 @@ async def update_item(sauce_id: int, new_sauce: HotSauce) -> HotSauce:
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Sauce with id {sauce_id} does not exist",
         )
-    updated_sauce = existing_sauce.model_copy(
-        update=new_sauce.model_dump(exclude_defaults=True)
-    )
+    updated_sauce = existing_sauce.model_copy(update=new_sauce.model_dump(exclude_defaults=True))
     DB.items_by_id[sauce_id] = updated_sauce
 
     return updated_sauce

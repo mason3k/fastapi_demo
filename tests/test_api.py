@@ -44,8 +44,10 @@ def test_create(new_sauce):
     assert client.get(f"/sauces/{new_sauce.id}").status_code == status.HTTP_200_OK
 
 
-def test_create_gen_id():
-    ...
+def test_create_gen_id(new_sauce):
+    resp = client.post("/sauces/", json=new_sauce.data)
+    assert resp.status_code == status.HTTP_201_CREATED
+    assert new_sauce.data.items() <= resp.json().items()
 
 
 def test_create_already_exists(existing_sauce, new_sauce):
