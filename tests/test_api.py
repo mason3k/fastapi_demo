@@ -8,9 +8,9 @@ client = TestClient(app)
 
 
 def test_delete(existing_sauce):
-    resp = client.delete(f"/sauces/{existing_sauce['id']}")
+    resp = client.delete(f"/sauces/{existing_sauce.id}")
     assert resp.status_code == status.HTTP_204_NO_CONTENT
-    assert client.get(f"/sauces/{existing_sauce['id']}").status_code == status.HTTP_404_NOT_FOUND
+    assert client.get(f"/sauces/{existing_sauce.id}").status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_get_all(existing_sauce):
@@ -18,14 +18,14 @@ def test_get_all(existing_sauce):
     assert resp.status_code == status.HTTP_200_OK
     content = resp.json()
     assert isinstance(content, list)
-    assert existing_sauce in content
+    assert existing_sauce.data in content
 
 
 def test_get_one(existing_sauce):
-    resp = client.get("/sauces/1")
+    resp = client.get(f"/sauces/{existing_sauce.id}")
     assert resp.status_code == status.HTTP_200_OK
     content = resp.json()
-    assert existing_sauce == content
+    assert existing_sauce.data == content
 
 
 def test_get_nonexistent():
@@ -38,18 +38,21 @@ def test_get_nonexistent():
 
 
 def test_create(new_sauce):
-    resp = client.post("/sauces/", json=new_sauce)
+    resp = client.post(f"/sauces/{new_sauce.id}", json=new_sauce.data)
     assert resp.status_code == status.HTTP_201_CREATED
-    assert new_sauce.items() <= resp.json().items()
-    assert client.get(f"/sauces/{new_sauce['id']}").status_code == status.HTTP_200_OK
+    assert new_sauce.data.items() <= resp.json().items()
+    assert client.get(f"/sauces/{new_sauce.id}").status_code == status.HTTP_200_OK
+
+
+def test_create_gen_id():
+    ...
 
 
 def test_create_already_exists(existing_sauce, new_sauce):
-    existing_id = existing_sauce["id"]
-    resp = client.post("/sauces/", json=new_sauce | {"id": existing_id})
+    resp = client.post(f"/sauces/{existing_sauce.id}", json=new_sauce.data)
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
     error = resp.json()["detail"]
-    assert str(existing_id) in error
+    assert str(existing_sauce.id) in error
     assert "already exists" in error
 
 
@@ -57,7 +60,6 @@ def test_create_bad_data():
     resp = client.post(
         "/sauces/",
         json={
-            "id": 57,
             "name": "bad",
             "brand": "bad",
             "scoville_scale": "not a number",
@@ -73,7 +75,6 @@ def test_create_missing_data():
     resp = client.post(
         "/sauces/",
         json={
-            "id": 57,
             "brand": "incomplete",
         },
     )
@@ -84,42 +85,38 @@ def test_create_missing_data():
 
 
 def test_update(existing_sauce_2):
-    existing_id = existing_sauce_2["id"]
     updates = {
-        "id": existing_id,
         "name": "updated name",
         "brand": "updated brand",
         "scoville_scale": 12,
         "flavor_notes": ["Bright"],
     }
-    resp = client.put(f"/sauces/{existing_id}", json=updates)
+    resp = client.put(f"/sauces/{existing_sauce_2.id}", json=updates)
     resp.status_code == status.HTTP_200_OK
-    assert {**existing_sauce_2, **updates}.items() <= resp.json().items()
-    assert client.get(f"/sauces/{existing_id}").json() == resp.json()
+    assert {**existing_sauce_2.data, **updates}.items() <= resp.json().items()
+    assert client.get(f"/sauces/{existing_sauce_2.id}").json() == resp.json()
 
 
 @pytest.mark.xfail
 def test_update_incomplete_data(existing_sauce_2):
-    existing_id = existing_sauce_2["id"]
     updates = {
-        "id": existing_id,
+        "id": existing_sauce_2.id,
         "flavor_notes": ["Bright"],
     }
-    resp = client.put(f"/sauces/{existing_id}", json=updates)
+    resp = client.put(f"/sauces/{existing_sauce_2.id}", json=updates)
     resp.status_code == status.HTTP_200_OK
     assert {**existing_sauce_2, **updates}.items() <= resp.json().items()
-    assert client.get(f"/sauces/{existing_id}").json() == resp.json()
+    assert client.get(f"/sauces/{existing_sauce_2.id}").json() == resp.json()
 
 
 def test_bad_update(existing_sauce_2):
-    existing_id = existing_sauce_2["id"]
     updates = {
-        "id": existing_id,
+        "id": existing_sauce_2.id,
         "name": "updated name",
         "brand": "updated brand",
         "bottle_size": -3,
     }
-    resp = client.put(f"/sauces/{existing_id}", json=updates)
+    resp = client.put(f"/sauces/{existing_sauce_2.id}", json=updates)
     resp.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     content = resp.json()["detail"]
     assert content[0]["type"] == "greater_than"
