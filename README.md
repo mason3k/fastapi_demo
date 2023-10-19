@@ -3,5 +3,5 @@
 TODO
 
 ```shell
-uvicorn main:app --reload
+uvicorn fastapi_demo.main:app --reload
 ```

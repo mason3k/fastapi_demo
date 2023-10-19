@@ -41,18 +41,20 @@ async def update_item(sauce_id: int, new_sauce: HotSauce) -> HotSauce:
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Sauce with id {sauce_id} does not exist",
         )
-    updated_sauce = existing_sauce.model_copy(update=new_sauce.model_dump(exclude_defaults=True))
+    updated_sauce = existing_sauce.model_copy(
+        update=new_sauce.model_dump(exclude_defaults=True)
+    )
     DB.items_by_id[sauce_id] = updated_sauce
 
     return updated_sauce
 
 
 @app.delete("/sauces/{sauce_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_item(sauce_id: int) -> dict:
+async def delete_item(sauce_id: int) -> None:
     if sauce_id not in DB.items_by_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"sauce with id {sauce_id} does not exist",
         )
     del DB.items_by_id[sauce_id]
-    return {}
+    return None
