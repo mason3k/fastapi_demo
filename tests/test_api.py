@@ -1,4 +1,3 @@
-import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
@@ -99,21 +98,18 @@ def test_update(existing_sauce_2):
     assert client.get(f"/sauces/{existing_sauce_2.id}").json() == resp.json()
 
 
-@pytest.mark.xfail
 def test_update_incomplete_data(existing_sauce_2):
     updates = {
-        "id": existing_sauce_2.id,
         "flavor_notes": ["Bright"],
     }
     resp = client.put(f"/sauces/{existing_sauce_2.id}", json=updates)
     resp.status_code == status.HTTP_200_OK
-    assert {**existing_sauce_2, **updates}.items() <= resp.json().items()
+    assert {**existing_sauce_2.data, **updates}.items() <= resp.json().items()
     assert client.get(f"/sauces/{existing_sauce_2.id}").json() == resp.json()
 
 
 def test_bad_update(existing_sauce_2):
     updates = {
-        "id": existing_sauce_2.id,
         "name": "updated name",
         "brand": "updated brand",
         "bottle_size": -3,
@@ -128,7 +124,6 @@ def test_bad_update(existing_sauce_2):
 def test_update_does_not_exist():
     nonexistent_id = 789
     updates = {
-        "id": nonexistent_id,
         "name": "updated name",
         "brand": "updated brand",
         "bottle_size": 10,

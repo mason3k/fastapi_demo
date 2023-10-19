@@ -5,7 +5,6 @@ from pydantic.types import NonNegativeInt, PositiveFloat
 
 
 class HotSauce(BaseModel):
-    id: int
     name: str
     brand: str
     scoville_scale: NonNegativeInt | None = None
@@ -23,3 +22,10 @@ class HotSauce(BaseModel):
             return [item.strip() for item in v.split(",")]
         else:
             raise ValueError(f"{info.field_name} must be a comma-delimited list")
+
+
+class HotSauceUpdate(HotSauce):
+    """A model with no required fields besides id for sending updates"""
+
+    name: str | None = None
+    brand: str | None = None

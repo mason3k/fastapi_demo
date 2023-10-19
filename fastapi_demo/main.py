@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, status
 
 from .db import MockDb
-from .model import HotSauce
+from .model import HotSauce, HotSauceUpdate
 
 DB = MockDb()
 
@@ -41,7 +41,7 @@ async def read_item(sauce_id: int) -> HotSauce:
 
 
 @app.put("/sauces/{sauce_id}")
-async def update_item(sauce_id: int, new_sauce: HotSauce) -> HotSauce:
+async def update_item(sauce_id: int, new_sauce: HotSauceUpdate) -> HotSauce:
     if not (existing_sauce := DB.items_by_id.get(sauce_id)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
