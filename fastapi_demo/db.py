@@ -3,7 +3,8 @@ from contextlib import suppress
 from dataclasses import dataclass, field
 from itertools import count, dropwhile
 from pathlib import Path
-from typing import ClassVar, Generator
+from typing import ClassVar
+from collections.abc import Generator
 
 from .model import HotSauce
 
