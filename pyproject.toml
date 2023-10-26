@@ -22,8 +22,5 @@ test = [
     "httpx"
 ]
 
-[tool.pytest.ini_options]
-pythonpath = [
-  "fastapi_demo"
-]
-
+[tool.bandit]
+exclude_dirs = ["tests"]
