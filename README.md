@@ -18,6 +18,25 @@ Example calls:
 
 *Get sauce by id*: `hotsauce-sujones.pythonanywhere.com/sauces/1`
 
+Example response:
+```json
+{
+    "name": "Frank's RedHot",
+    "brand": "Frank's",
+    "scoville_scale": 450,
+    "ingredients": [
+        "Aged Cayenne Red Peppers",
+        "Distilled Vinegar"
+    ],
+    "flavor_notes": [
+        "Tangy",
+        "Spicy"
+    ],
+    "bottle_size": 12.0,
+    "price": "3.99"
+}
+```
+
 ## Developing
 
 ```shell
