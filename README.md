@@ -15,6 +15,7 @@ GET, DELETE, POST, and PUT supported
 Example calls:
 
 *Get all sauces*: `hotsauce-sujones.pythonanywhere.com/sauces/`
+
 *Get sauce by id*: `hotsauce-sujones.pythonanywhere.com/sauces/1`
 
 ## Developing
